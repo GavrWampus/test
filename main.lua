@@ -56,7 +56,7 @@ local size = display.contentWidth/count;
 posX = 0;
 posY = 0;
 local startX = W/2 + size/2 - size*count/2;
-local startY = H/2 + size/2 - size*count-/2;
+local startY = H/2 + size/2 - size*count/2;
 local curRect = nil;
 local array = {};
 local arrayText = {};
@@ -98,7 +98,7 @@ local function createRect(_id, _x, _y)
 end
 
 -- Делаем цикл непосредственно рисующий наши "прямоугольники"
-for i = 1, count*2 do
+for i = 1, count^2 do
     createRect( i,  startX + posX*size, startY + posY*size ); -- тут чистая математика, просто надо разобраться и всё
     posX = posX + 1 -- прибавляем к иксу + 1, после рисовки каждого квадрата
     if ( posX % count == 0 ) then -- Пишем условный оператор, который делает из строчки квадратов поле для игры
