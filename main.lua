@@ -1,5 +1,7 @@
 print("Project: Tic-tac-toe"); -- Пишем в консоле название проекта
 
+display.setStatusBar( display.HiddenStatusBar ) -- Прячем статусбар(который ешо наверху такой)
+
 local background = display.newImageRect("background.jpg", display.contentWidth, display.contentHeight); -- Добавляем круток бекграунд ;)
 background.x = display.contentCenterX -- Центруем по иксу
 background.y = display.contentCenterY -- Центруеи по игреку
@@ -62,9 +64,11 @@ local arrayText = {};
 
 function putCurrentIcon()
     print("Эта функция работает!");
-        arrayText[101].text = "X"
+    for i=1, #arrayText do
+        arrayText[i].text = "X"
         print( arrayText[i] )
         -- print( tap.x )
+    end
 end
 
 
