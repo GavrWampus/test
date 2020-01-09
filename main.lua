@@ -90,7 +90,7 @@ local function createRect(_id, _x, _y)
     rectangle.enabled = true;
     mainGroup.parent:insert(rectangle)-- Добавляем наш прямоугольник на сцену
     table.insert( array, rectangle ) -- привязываем массив к нашему квадратику
-    local myText = display.newText( "" , _x, _y, "Algerian", size/1.5 ) -- Добавляем текст. Да это хреново, но пока он будет за место эконки
+    local myText = display.newText( "" , _x, _y, native.systemFont, size/1.5 ) -- Добавляем текст. Да это хреново, но пока он будет за место эконки
     myText:setFillColor( 1, 1, 1 )
     rectangle:addEventListener("tap", putCurrentIcon)
     mainGroup.parent:insert(myText)
