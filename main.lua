@@ -6,6 +6,9 @@ local background = display.newImageRect("background.jpg", display.contentWidth, 
 background.x = display.contentCenterX -- Центруем по иксу
 background.y = display.contentCenterY -- Центруеи по игреку
 
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Добавляем музыкальны кнопки
+---------------------------------------------------------------------------------------------------------------------------------------------
 local musicPlayButton = display.newImageRect("playButton.png", 112.5, 62.5 ); -- Добавляем кнопку play!
 musicPlayButton.x = 60 -- Координаты по иксу
 musicPlayButton.y = 40 -- Координаты по игреку
@@ -17,9 +20,11 @@ musicStopButton.y = 40 -- Координаты по игреку
 musicStopButton.enabled = false; -- делаем её изначально недоступной
 cnd = true; -- Делаем переменную condition(условие)
 
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
 local bgSound = audio.loadSound( "music/bg.mp3" ); -- Загружаем на саунд из папки music
 
-function musicPlayButton:touch(e) --Функция отвечающая за включение и возобновление музыки
+function musicPlayButton:touch(e) -- Функция, отвечающая за включение и возобновление музыки
     if (e.phase == "ended" and musicPlayButton.enabled == true and cnd == true) then -- ended - когда отпускаешь ЛКМ
         audio.setVolume( 0.1, { channel=1 } ) -- Устанавливаем громкость
         audio.play(bgSound, { channel = 1, loops = -1, fadein = 6000 }); -- Воспроизводим музыку на канале 1 с бесконечным повторением и входом в 6 секунд
@@ -31,9 +36,9 @@ function musicPlayButton:touch(e) --Функция отвечающая за в�
     end
 end
 
-function musicStopButton:touch(e)
+function musicStopButton:touch(e) -- Функция, отвечающаа за остановку музыки
     if (e.phase == "ended" and cnd == false) then
-        audio.pause(1); --приостанавливаем музыку на канале 1
+        audio.pause(1); -- Приостанавливаем музыку на канале 1
         musicPlayButton.enabled = true; -- Делаем так чтобы её можно было возобновить кнопкой play!
         musicStopButton.enabled = false; -- На всякий случай)
         cnd = false; -- Тоже на всякий случай, если проигрывающаа функция не переведёт условие в нужный момент в false
@@ -41,35 +46,100 @@ function musicStopButton:touch(e)
 end
 
 
-musicPlayButton:addEventListener("touch", musicPlayButton) -- можно назвать это использованием библиотеки
+musicPlayButton:addEventListener("touch", musicPlayButton) -- Можно назвать это использованием библиотеки(на самом деле нельзя, он просто отслеживает события, а точнее прослушивает)
 musicStopButton:addEventListener("touch", musicStopButton) -- Такая хрень реагирует на нажатия
 
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Создаём все необходимые переменные, массивы и группы
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+local count = 10;
+      posX = 0;
+      posY = 0;
+local curRect = nil;
 local W = display.contentWidth; -- Создаём переменную W что бы не писать каждый раз Width
 local H = display.contentHeight; -- Создаём переменную H что бы не писать каждый раз Height
+local size = display.contentWidth/count;
+local startX = W/2 + size/2 - size*count/2;
+local startY = H/2 + size/2 - size*count/2;
+local array = {};
+local arrayText = {};
 
 local mainGroup = display.newGroup(); -- Тут создаём главную "группу" на которой будет находиться всё что у нас есть(Но это не точно ;)
 mainGroup.parent:insert(mainGroup);
 
--- Создаём все необходимые переменные и массивы
-local count = 10;
-local size = display.contentWidth/count;
-posX = 0;
-posY = 0;
-local startX = W/2 + size/2 - size*count/2;
-local startY = H/2 + size/2 - size*count/2;
-local curRect = nil;
-local array = {};
-local arrayText = {};
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Functions
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--Функция, которая считает свободные квадратки
+function getCountFreeRect()
+    local countFree = count^2;
+    for i = 1, #array do
+        local item_mc = array[i];
+        if (item_mc.enabled == false) then
+            countFree = countFree - 1;
+        end
+    end
+    return countFree;
+end
 
-function putCurrentIcon()
-    print("Эта функция работает!");
-    for i=1, #arrayText do
-        arrayText[i].text = "X"
-        print( arrayText[i] )
-        -- print( tap.x )
+function turnAI() -- Тут у нас ИИ ставит нолики(Пункция хрень, патамушта он ставит их рандомно, а нам надо, что бы он играл осознанно(Идея в процессе разработки))
+    if(getCountFreeRect() > 0) then
+        local rnd = math.ceil(math.random()*count^2)
+        local item_mc = array[rnd];
+        if (item_mc.enabled) then
+            arrayText[rnd].text = "O";
+            item_mc.enabled = false;
+        else
+            turnAI()
+        end
     end
 end
 
+-- Дохрена сложная функция :D
+local function checkButtons(event)
+    for i = 1, #array do -- пробегаемся по массиву, который мы привязали к квадратикам
+        local item_mc = array[i]; -- Обозначаем переменную item_mc
+        local _x, _y = item_mc:localToContent( 0, 0 ); -- Тут узнаём координаты центров всех квадратов
+        local dx = event.x - _x; --считаем разницу нажатия и координат квадратика от центра по x
+        local dy = event.y - _y; --считаем разницу нажатия и координат квадратика от центра по y
+        local wh  = item_mc.width; -- записываем длину квадрата в переменную
+        local ht  = item_mc.height; -- записываем ширину квадрата в переменную
+
+        if (math.abs(dx)<wh/2 and math.abs(dy)<ht/2) then --Если расстояние от центра одного квадрата меньше, чем половина его длины/ширины, то мы понимаем, что нему было произведено нажатие
+            if( item_mc.selected == false ) then -- Если по квадратику было произведено нажатие, но до этого он не был выбран - выбираем его
+                item_mc.selected = true;
+            end
+            if ( item_mc.selected == true ) then -- если уже выбран какой то ещё объект, то делаем ему сатаус "Не выбран"
+                item_mc.selected = false;
+            end
+        end
+    end
+end
+
+-- Функция отвечает за то что ты ставишь крестики
+local function touchTurn(event)
+    local phase = event.phase;
+
+    if ( phase == 'began' ) then
+        checkButtons(event);
+    elseif( phase == 'moved' ) then
+        checkButtons(event);
+    else
+        if(getCountFreeRect() > 0) then
+            for i = 1, #array do
+                local item_mc = array[i];
+                if (item_mc.selected and item_mc.enabled) then -- Если квадратик выбран и доступен, ставим там крестик
+                    arrayText[i].text = "X";
+                    item_mc.enabled = false;
+                    turnAI();
+                end
+            end
+        end
+    end
+end
 
 -- Тута у нас функция рисующая прямоугольники
 local function createRect(_id, _x, _y)
@@ -92,12 +162,15 @@ local function createRect(_id, _x, _y)
     table.insert( array, rectangle ) -- привязываем массив к нашему квадратику
     local myText = display.newText( "" , _x, _y, native.systemFont, size/1.5 ) -- Добавляем текст. Да это хреново, но пока он будет за место эконки
     myText:setFillColor( 1, 1, 1 )
-    rectangle:addEventListener("tap", putCurrentIcon)
     mainGroup.parent:insert(myText)
     table.insert( arrayText, myText )
+    rectangle:addEventListener( "touch", touchTurn )
 end
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Делаем цикл непосредственно рисующий наши "прямоугольники"
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 for i = 1, count^2 do
     createRect( i,  startX + posX*size, startY + posY*size ); -- тут чистая математика, просто надо разобраться и всё
     posX = posX + 1 -- прибавляем к иксу + 1, после рисовки каждого квадрата
@@ -106,70 +179,4 @@ for i = 1, count^2 do
           posY = posY + 1
     end
 end
-
-
-
--- --Функция, которая считает свободные квадратки
--- function getCountFreeRect()
---     local countFree = count;
---     for i = 1, #array do
---         local item_mc = array[i];
---         if (item_mc.enabled == false) then
---             countFree = countFree - 1;
---         end
---     end
---     return countFree;
--- end
-
--- function turnAI() -- Тут у нас ИИ ставит нолики
---     if(getCountFreeRect() > 0) then
---         local rnd = math.ceil(math.random()*9)
---         local item_mc = array[rnd];
---         if (item_mc.enabled) then
---             arrayText[rnd].text = "O";
---             item_mc.enabled = false;
---         else
---             turnAI()
---         end
---     end
--- end
--- -- Дохрена непонятная функция :D
--- local function checkButtons(event)
---     for i = 1, #array do -- пробегаемся по массиву, который мы привязали к квадратикам
---         local item_mc = array[i];
---         local _x, _y = item_mc:localToContent( 0, 0 ); -- localToGlobal
---         local dx = event.x - _x; -- вычитаем разницу нажатия и координаты квадратика от центра
---         local dy = event.y - _y;
---         local w  = item_mc.width;
---         local h  = item_mc.height;
---
---         if (math.abs(dx)<w/2 and math.abs(dy)<h/2) then
---             item_mc.selected = true
---         else
---             item_mc.selected = false
---         end
---     end
--- end
---
---
--- -- Функция отвечает за то что ты ставишь крестики
--- local function touchHandler(event)
---     local phase = event.phase;
---
---     if ( phase == 'began' ) then
---         checkButtons(event);
---     elseif( phase == 'moved' ) then
---         checkButtons(event);
---     else
---         if(getCountFreeRect() > 0) then
---             for i = 1, #array do
---                 local item_mc = array[i];
---                 if (item_mc.selected and item_mc.enabled) then -- Если квадратик выбран и доступен, ставим там крестик
---                     arrayText[i].text = "X";
---                     item_mc.enabled = false;
---                     turnAI();
---                 end
---             end
---         end
---     end
--- end
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
