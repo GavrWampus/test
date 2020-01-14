@@ -100,6 +100,7 @@ end
 
 -- Дохрена сложная функция :D
 local function checkButtons(event)
+    print( "Оно работает!" )
     for i = 1, #array do -- пробегаемся по массиву, который мы привязали к квадратикам
         local item_mc = array[i]; -- Обозначаем переменную item_mc
         local _x, _y = item_mc:localToContent( 0, 0 ); -- Тут узнаём координаты центров всех квадратов
@@ -111,9 +112,13 @@ local function checkButtons(event)
         if (math.abs(dx)<wh/2 and math.abs(dy)<ht/2) then --Если расстояние от центра одного квадрата меньше, чем половина его длины/ширины, то мы понимаем, что нему было произведено нажатие
             if( item_mc.selected == false ) then -- Если по квадратику было произведено нажатие, но до этого он не был выбран - выбираем его
                 item_mc.selected = true;
+                print('S')
             end
+        else
             if ( item_mc.selected == true ) then -- если уже выбран какой то ещё объект, то делаем ему сатаус "Не выбран"
                 item_mc.selected = false;
+                print( 'unS' )
+
             end
         end
     end
@@ -122,6 +127,7 @@ end
 -- Функция отвечает за то что ты ставишь крестики
 local function touchTurn(event)
     local phase = event.phase;
+    print( "touchTurn" )
 
     if ( phase == 'began' ) then
         checkButtons(event);
