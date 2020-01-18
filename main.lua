@@ -100,50 +100,87 @@ function turnAI() -- Тут у нас ИИ ставит нолики(Пункц�
 end
 
 local function checkWin()
-    local function checkWinHorizontal()
-        local pos1 = 1/count
-        local pos2 = count
-        local pos3 = 1
-        for i=count*pos1, count*pos2 do
-            if ( countToWin == 3 and arrayText[i] == "1" ) then
-                print("It,s X")
-                if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] ) then
-                    print("X Won")
-                    local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                    myText:setFillColor( 1, 1, 1 )
-                    for i=1, #array do
-                        item_mc = array[i];
-                        item_mc.enabled = false;
+        local function checkWinHorizontal()
+            for i= 1, count^2 do
+                if ( countToWin == 3 and arrayText[i] == "1" ) then
+                    print("X:" .. i )
+                    if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] ) then
+                        print("X Won")
+                        local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                        myText:setFillColor( 1, 1, 1 )
+                        for i=1, #array do
+                            item_mc = array[i];
+                            item_mc.enabled = false;
+                        end
                     end
                 end
-            end
-            if ( countToWin == 4 and arrayText[i] == "1" ) then
-                print("It,s X")
-                if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] ) then
-                    print("X Won")
-                    local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                    myText:setFillColor( 1, 1, 1 )
-                    for i=1, #array do
-                        item_mc = array[i];
-                        item_mc.enabled = false;
+                if ( countToWin == 4 and arrayText[i] == "1" ) then
+                    print("X:" .. i )
+                    if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] ) then
+                        print("X Won")
+                        local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                        myText:setFillColor( 1, 1, 1 )
+                        for i=1, #array do
+                            item_mc = array[i];
+                            item_mc.enabled = false;
+                        end
                     end
                 end
-            end
-            if ( countToWin == 5 and arrayText[i] == "1" ) then
-                print("It,s X")
-                if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] and arrayText[i+3] == arrayText[i+4] ) then
-                    print("X Won")
-                    local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                    myText:setFillColor( 1, 1, 1 )
-                    for i=1, #array do
-                        item_mc = array[i];
-                        item_mc.enabled = false;
+                if ( countToWin == 5 and arrayText[i] == "1" ) then
+                    print("X:" .. i )
+                    if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] and arrayText[i+3] == arrayText[i+4] ) then
+                        print("X Won")
+                        local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                        myText:setFillColor( 1, 1, 1 )
+                        for i=1, #array do
+                            item_mc = array[i];
+                            item_mc.enabled = false;
+                        end
                     end
                 end
             end
         end
-    end
-    checkWinHorizontal()
+        local function checkWinVertical()
+            for i=1, count^2 do
+                if ( countToWin == 3 and arrayText[i] == "1" ) then
+                    if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] ) then
+                        print("X Won")
+                        local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                        myText:setFillColor( 1, 1, 1 )
+                        for i=1, #array do
+                            item_mc = array[i];
+                            item_mc.enabled = false;
+                        end
+                    end
+                end
+                if ( countToWin == 4 and arrayText[i] == "1" ) then
+                    print("X:" .. i )
+                    if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] and arrayText[i+count*2] == arrayText[i+count*3] ) then
+                        print("X Won")
+                        local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                        myText:setFillColor( 1, 1, 1 )
+                        for i=1, #array do
+                            item_mc = array[i];
+                            item_mc.enabled = false;
+                        end
+                    end
+                end
+                if ( countToWin == 5 and arrayText[i] == "1" ) then
+                    print("X:" .. i )
+                    if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] and arrayText[i+count*2] == arrayText[i+count*3] and arrayText[i+count*3] == arrayText[i+count*4] ) then
+                        print("X Won")
+                        local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                        myText:setFillColor( 1, 1, 1 )
+                        for i=1, #array do
+                            item_mc = array[i];
+                            item_mc.enabled = false;
+                        end
+                    end
+                end
+            end
+        end
+        checkWinVertical()
+        checkWinHorizontal()
 end
 -- Дохрена сложная функция :D
 local function checkButtons(event)
