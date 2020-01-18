@@ -55,7 +55,8 @@ musicStopButton:addEventListener("touch", musicStopButton) -- Такая хре�
 -- Создаём все необходимые переменные, массивы и группы
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-local count = 10;
+local count = 3;
+local countToWin = 3;
       posX = 0;
       posY = 0;
 local curRect = nil;
@@ -98,6 +99,52 @@ function turnAI() -- Тут у нас ИИ ставит нолики(Пункц�
     end
 end
 
+local function checkWin()
+    local function checkWinHorizontal()
+        local pos1 = 1/count
+        local pos2 = count
+        local pos3 = 1
+        for i=count*pos1, count*pos2 do
+            if ( countToWin == 3 and arrayText[i] == "1" ) then
+                print("It,s X")
+                if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] ) then
+                    print("X Won")
+                    local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                    myText:setFillColor( 1, 1, 1 )
+                    for i=1, #array do
+                        item_mc = array[i];
+                        item_mc.enabled = false;
+                    end
+                end
+            end
+            if ( countToWin == 4 and arrayText[i] == "1" ) then
+                print("It,s X")
+                if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] ) then
+                    print("X Won")
+                    local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                    myText:setFillColor( 1, 1, 1 )
+                    for i=1, #array do
+                        item_mc = array[i];
+                        item_mc.enabled = false;
+                    end
+                end
+            end
+            if ( countToWin == 5 and arrayText[i] == "1" ) then
+                print("It,s X")
+                if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] and arrayText[i+3] == arrayText[i+4] ) then
+                    print("X Won")
+                    local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                    myText:setFillColor( 1, 1, 1 )
+                    for i=1, #array do
+                        item_mc = array[i];
+                        item_mc.enabled = false;
+                    end
+                end
+            end
+        end
+    end
+    checkWinHorizontal()
+end
 -- Дохрена сложная функция :D
 local function checkButtons(event)
     print( "Оно работает!" )
@@ -139,7 +186,9 @@ local function touchTurn(event)
                 local item_mc = array[i];
                 if (item_mc.selected and item_mc.enabled) then -- Если квадратик выбран и доступен, ставим там крестик
                     arrayText[i].text = "X";
+                    arrayText[i] = "1";
                     item_mc.enabled = false;
+                    checkWin();
                     turnAI();
                 end
             end
