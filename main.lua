@@ -102,7 +102,7 @@ end
 local function checkWin()
         local function checkWinHorizontal()
             for i= 1, count^2 do
-                if ( countToWin == 3 and arrayText[i] == "1" ) then
+                if ( countToWin == 3 and arrayText[i] == 1 ) then
                     print("X:" .. i )
                     if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] ) then
                         print("X Won")
@@ -114,7 +114,7 @@ local function checkWin()
                         end
                     end
                 end
-                if ( countToWin == 4 and arrayText[i] == "1" ) then
+                if ( countToWin == 4 and arrayText[i] == 1 ) then
                     print("X:" .. i )
                     if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] ) then
                         print("X Won")
@@ -126,7 +126,7 @@ local function checkWin()
                         end
                     end
                 end
-                if ( countToWin == 5 and arrayText[i] == "1" ) then
+                if ( countToWin == 5 and arrayText[i] == 1 ) then
                     print("X:" .. i )
                     if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] and arrayText[i+3] == arrayText[i+4] ) then
                         print("X Won")
@@ -142,7 +142,7 @@ local function checkWin()
         end
         local function checkWinVertical()
             for i=1, count^2 do
-                if ( countToWin == 3 and arrayText[i] == "1" ) then
+                if ( countToWin == 3 and arrayText[i] == 1 ) then
                     if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] ) then
                         print("X Won")
                         local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
@@ -153,7 +153,7 @@ local function checkWin()
                         end
                     end
                 end
-                if ( countToWin == 4 and arrayText[i] == "1" ) then
+                if ( countToWin == 4 and arrayText[i] == 1 ) then
                     print("X:" .. i )
                     if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] and arrayText[i+count*2] == arrayText[i+count*3] ) then
                         print("X Won")
@@ -165,7 +165,7 @@ local function checkWin()
                         end
                     end
                 end
-                if ( countToWin == 5 and arrayText[i] == "1" ) then
+                if ( countToWin == 5 and arrayText[i] == 1 ) then
                     print("X:" .. i )
                     if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] and arrayText[i+count*2] == arrayText[i+count*3] and arrayText[i+count*3] == arrayText[i+count*4] ) then
                         print("X Won")
@@ -179,6 +179,46 @@ local function checkWin()
                 end
             end
         end
+        local function checkWinDiagonal()
+            for i=1, count^2 do
+                if ( countToWin == 3 and arrayText[i] == 1 ) then
+                    if ( arrayText[i] == arrayText[i+count+1] and arrayText[i+count+1] == arrayText[i+count*2+2] ) then
+                        print("X Won")
+                        local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                        myText:setFillColor( 1, 1, 1 )
+                        for i=1, #array do
+                            item_mc = array[i];
+                            item_mc.enabled = false;
+                        end
+                    end
+                end
+                if ( countToWin == 4 and arrayText[i] == 1 ) then
+                    print("X:" .. i )
+                    if ( arrayText[i] == arrayText[i+count+1] and arrayText[i+count+1] == arrayText[i+count*2+2] and arrayText[i+count*2+2] == arrayText[i+count*3+3] ) then
+                        print("X Won")
+                        local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                        myText:setFillColor( 1, 1, 1 )
+                        for i=1, #array do
+                            item_mc = array[i];
+                            item_mc.enabled = false;
+                        end
+                    end
+                end
+                if ( countToWin == 5 and arrayText[i] == 1 ) then
+                    print("X:" .. i )
+                    if ( arrayText[i] == arrayText[i+count+1] and arrayText[i+count+1] == arrayText[i+count*2+2] and arrayText[i+count*2+2] == arrayText[i+count*3+3] and arrayText[i+count*3+3] == arrayText[i+count*4+4] ) then
+                        print("X Won")
+                        local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
+                        myText:setFillColor( 1, 1, 1 )
+                        for i=1, #array do
+                            item_mc = array[i];
+                            item_mc.enabled = false;
+                        end
+                    end
+                end
+            end
+        end
+        checkWinDiagonal()
         checkWinVertical()
         checkWinHorizontal()
 end
@@ -211,19 +251,29 @@ end
 -- Функция отвечает за то что ты ставишь крестики
 local function touchTurn(event)
     local phase = event.phase;
-    print( "touchTurn" )
 
     if ( phase == 'began' ) then
-        checkButtons(event);
+        print( "touchTurn" )
+        for i = 1, #array do
+            local item_mc = array[i];
+            if (item_mc.enabled == true) then
+                checkButtons(event);
+            end
+        end
     elseif( phase == 'moved' ) then
-        checkButtons(event);
+        for i = 1, #array do
+            local item_mc = array[i];
+            if (item_mc.enabled == true) then
+                checkButtons(event);
+            end
+        end
     else
         if(getCountFreeRect() > 0) then
             for i = 1, #array do
                 local item_mc = array[i];
                 if (item_mc.selected and item_mc.enabled) then -- Если квадратик выбран и доступен, ставим там крестик
                     arrayText[i].text = "X";
-                    arrayText[i] = "1";
+                    arrayText[i] = 1;
                     item_mc.enabled = false;
                     checkWin();
                     turnAI();
@@ -260,7 +310,7 @@ local function createRect(_id, _x, _y)
 end
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Делаем цикл непосредственно рисующий наши "прямоугольники"
+-- Делаем циклы, необходимые для прорисовки поля и обозначния клеток в массиве
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 for i = 1, count^2 do
@@ -271,4 +321,5 @@ for i = 1, count^2 do
           posY = posY + 1
     end
 end
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
