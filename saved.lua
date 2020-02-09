@@ -55,9 +55,6 @@ musicStopButton:addEventListener("touch", musicStopButton) -- Такая хре�
 -- Создаём все необходимые переменные, массивы и группы
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-local emblems = {"krestMenu.png", "nolMenu.png", "redKrestikButton.png", "greenNolikButton.png"}
-local WhoNow = 1
-
 local count = 3;
 local countToWin = 3;
       posX = 0;
@@ -94,15 +91,8 @@ function turnAI() -- Тут у нас ИИ ставит нолики(Пункц�
         local rnd = math.ceil(math.random()*count^2)
         local item_mc = array[rnd];
         if (item_mc.enabled) then
-          local _x, _y = item_mc:localToContent( 0, 0 ); -- Тут узнаём координаты центров всех квадратов
-          if WhoNow > 2 then
-            WhoNow = 1
-          end
-          Kartina = display.newImageRect(emblems[WhoNow], size/1.5, size/1.5)
-          Kartina.x = _x
-          Kartina.y = _y
-          item_mc.enabled = false;
-          WhoNow = WhoNow + 1
+            arrayText[rnd].text = "O";
+            item_mc.enabled = false;
         else
             turnAI()
         end
@@ -282,20 +272,11 @@ local function touchTurn(event)
             for i = 1, #array do
                 local item_mc = array[i];
                 if (item_mc.selected and item_mc.enabled) then -- Если квадратик выбран и доступен, ставим там крестик
-                  local _x, _y = item_mc:localToContent( 0, 0 ); -- Тут узнаём координаты центров всех квадратов
-                  if WhoNow > 2 then
-                    WhoNow = 1
-                  end
-                  Kartina = display.newImageRect(emblems[WhoNow], size/1.5, size/1.5)
-                  Kartina.x = _x
-                  Kartina.y = _y
-                  item_mc.enabled = false;
-                  WhoNow = WhoNow + 1
-                  arrayText[i] = 1
-                  checkWin();
-                  turnAI();
-
-
+                    arrayText[i].text = "X";
+                    arrayText[i] = 1;
+                    item_mc.enabled = false;
+                    checkWin();
+                    turnAI();
                 end
             end
         end
