@@ -24,19 +24,19 @@ function scene:create( event )
 
     display.setStatusBar( display.HiddenStatusBar ) -- Прячем статусбар(который ешо наверху такой)
 
-    local background = display.newImageRect("background.jpg", display.contentWidth, display.contentHeight); -- Добавляем круток бекграунд ;)
+    local background = display.newImageRect(sceneGroup, "background.jpg", display.contentWidth, display.contentHeight); -- Добавляем круток бекграунд ;)
     background.x = display.contentCenterX -- Центруем по иксу
     background.y = display.contentCenterY -- Центруеи по игреку
 
     ---------------------------------------------------------------------------------------------------------------------------------------------
     -- Добавляем музыкальные кнопки
     ---------------------------------------------------------------------------------------------------------------------------------------------
-    local musicPlayButton = display.newImageRect("playButton.png", 112.5, 62.5 ); -- Добавляем кнопку play!
+    local musicPlayButton = display.newImageRect(sceneGroup, "playButton.png", 112.5, 62.5 ); -- Добавляем кнопку play!
     musicPlayButton.x = display.contentCenterX/1.5-12.5 -- Координаты по иксу
     musicPlayButton.y = 40 -- Координаты по игреку
     musicPlayButton.enabled = true; -- делаем её изначально доступной
 
-    local musicStopButton = display.newImageRect("stopButton.png", 112.5, 62.5 ); -- Добавляем кнопку stop!
+    local musicStopButton = display.newImageRect(sceneGroup, "stopButton.png", 112.5, 62.5 ); -- Добавляем кнопку stop!
     musicStopButton.x = display.contentCenterX*1.5-12.5 -- Координаты по иксу
     musicStopButton.y = 40 -- Координаты по игреку
     musicStopButton.enabled = false; -- делаем её изначально недоступной
@@ -58,7 +58,7 @@ function scene:create( event )
         end
     end
 
-    function musicStopButton:touch(e) -- Функция, отвечающаа за остановку музыки
+    function musicStopButton:touch(e) -- Функция, отвечающая за остановку музыки
         if (e.phase == "ended" and cnd == false) then
             audio.pause(1); -- Приостанавливаем музыку на канале 1
             musicPlayButton.enabled = true; -- Делаем так чтобы её можно было возобновить кнопкой play!
@@ -77,424 +77,251 @@ function scene:create( event )
     -- Создаём все необходимые переменные, массивы и группы
     ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    local emblems = {"krestMenu.png", "nolMenu.png", "redKrestikButton.png", "greenNolikButton.png"}
-    local WhoNow = 1
-
-    local count = 12;
-    local countToWin = 5;
-          posX = 0;
-          posY = 0;
-    local curRect = nil;
+    local WhoNow = 1 -- Используется для емблем
+    local count = 10; -- Размер поля
+    local countToWin = 5; -- Сколько нужно поставить в ряд для победы
     local W = display.contentWidth; -- Создаём переменную W что бы не писать каждый раз Width
     local H = display.contentHeight; -- Создаём переменную H что бы не писать каждый раз Height
-    local size = display.contentWidth/count;
-    local startX = W/2 + size/2 - size*count/2;
-    local startY = H/2 + size/2 - size*count/2;
-    local array = {};
-    local arrayText = {};
+    local size = display.contentWidth/count; -- Размер клетки
+    local startX = W/2 + size/2 - size*count/2; -- Начало отчета для клетки
+    local startY = H/2 + size/2 - size*count/2; -- Начало отсчета для клетки
+    local emblems = {"redKrestikButton.png", "greenNolikButton.png"} -- Массив с эмблемами "krestMenu.png", "nolMenu.png", 
+    local arrayText = {} -- Значения клеток хранятся тут
+
+    local array = {} -- Сами клетки хранятся тут
+    for i= 1, count do -- Создаем двумерный массив
+        array[i] = {}
+        for j = 1, count do
+            array[i][j] = nil
+        end
+    end
 
     local mainGroup = display.newGroup(); -- Тут создаём главную "группу" на которой будет находиться всё что у нас есть(Но это не точно ;)
-    mainGroup.parent:insert(mainGroup);
+    sceneGroup:insert(mainGroup);
 
     --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     -- Functions
     --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    --Функция, которая считает свободные квадратки
+    --Функция, которая считает свободные квадратики
     function getCountFreeRect()
         local countFree = count^2;
-        for i = 1, #array do
-            local item_mc = array[i];
-            if (item_mc.enabled == false) then
-                countFree = countFree - 1;
+        for i = 1, count do
+            for j = 1, count do
+                local item_mc = array[i][j];
+                if (item_mc.enabled == false) then
+                    countFree = countFree - 1;
+                end
             end
         end
         return countFree;
     end
 
     function turnAI() -- Тут у нас ИИ ставит нолики(Пункция хрень, патамушта он ставит их рандомно, а нам надо, что бы он играл осознанно(Идея в процессе разработки))
-        for i=1, count^2 do
-            if ( countToWin == 3 and arrayText[i] == 1 ) then -- Для игры "3 в ряд" смотрим на крестики
-                if ( arrayText[i] == arrayText[i+1] and array[i].y == array[i+1].y and array[i+2].enable == true ) then -- Если у игрока стоит уже 2 крестика в ряд
-                    print( "AI" )
-                    local _x, _y = array[i+2]:localToContent( 0, 0 ); -- Вычисляем координаты центра квадратика
-                    Kartina = display.newImageRect(emblems[WhoNow], size/1.5, size/1.5) -- Ставим нолик
-                    Kartina.x = _x
-                    Kartina.y = _y
-                elseif( arrayText[i] == arrayText[i+1] and array[i-1].enable == true ) then
-                    local _x, _y = array[i-1]:localToContent( 0, 0 ); -- Вычисляем координаты центра квадратика
-                    Kartina = display.newImageRect(emblems[WhoNow], size/1.5, size/1.5) -- Ставим нолик
-                    Kartina.x = _x
-                    Kartina.y = _y
 
-                    for i=1, #array do
-                        item_mc = array[i];
-                        item_mc.enabled = false;
-                    end
-                end
+    end
+
+    ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+    local function checkWinDebug() -- Пусть будет
+        print [=[
+        .
+        .
+        .
+        .
+        .]=]
+        -- Проверка столбцов
+        for i = 1, count do -- Пробегаемся по строкам
+            local sum = 0; -- Переменная будет считать, сумму столбца
+            for j = 1, count do -- Пробегаемся по столбцам
+                print( "iteration: " .. i .. ";" .. j )
+                local sum = sum + arrayText[i][j]
+                print(sum)
             end
         end
     end
 
-    ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    local function checkWinX() -- Проверяем выигрыш для Крестиков(Х)
-            local function checkWinHorizontal() -- Горизонтальная проверка выигрыша
-                for i= 1, count^2 do -- Пробегаемся по всем квадратикам
-                    if ( countToWin == 3 and arrayText[i] == 1 ) then   -- Проверка, если игра 3х3
-                        print("X:" .. i )
-                        if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] ) then -- Если 3 в ряд
-                            if ( array[i].y == array[i+1].y and array[i+1].y == array[i+2].y ) then -- Если у всех одинаковые координаты по Y
-                                print("X Won")
-                                local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                                myText:setFillColor( 1, 1, 1 ) -- Да будет белый цвет!
-                                for i=1, #array do -- Делаем все квадраты недоступными, что бы было меньше проблем
-                                    item_mc = array[i];
-                                    item_mc.enabled = false;
-                                end
+
+
+
+    local function CheckWin() -- ооооо, тут все и начинается
+        local function checkWinHorizontal() -- Проверяем горизонтали
+            local sum = 0
+            for j = 1, count do -- Перебераем двумерный массив
+                print("stroka", j)
+                for i = 1, count do -- Перебераем двумерный массив
+                    if ( arrayText[i][j] ~= 0 ) then -- Клетка не пуста, начинаем
+                        sum = sum + arrayText[i][j] -- Sum - счётчик серии, если есть серия, то к нему прибавляется значение клетки массива
+                        print( "sum = ", sum )
+                    else -- Если клетка пуста, обнуляем сум
+                        sum = 0
+                    end
+                    if ( math.abs(sum) == countToWin ) then -- Если модуль счётчика равен нужному количеству фигур в ряд, то это значит, что кто то выиграл
+                        if ( sum > 0 ) then -- Если sum больше чем 0 (3, 4, 5, 6), то это значит, что выиграли крестики
+                            print( "X Won" )
+                            for i = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
+                                for j = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
+                                    array[i][j].enabled = false; -- Выключаем все клетки
+                                end -- Этот цикл нужен нам, что бы после победы нельзя было ставить крестики и нолики
+                            end
+                        elseif (sum < 0 ) then -- Если sum меньше чем 0 (-3, -4, -5, -6), то это значит, что выиграли нолики
+                            print( "O Won" )
+                            for i = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
+                                for j = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
+                                    array[i][j].enabled = false; -- Выключаем все клетки
+                                end -- Снова цикл, делающий клетки недоступными после победы
                             end
                         end
                     end
-                    if ( countToWin == 4 and arrayText[i] == 1 ) then
-                        print("X:" .. i )
-                        if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] ) then
-                            if ( array[i].y == array[i+1].y and array[i+1].y == array[i+2].y and array[i+2].y == array[i+3].y ) then
-                                print("X Won")
-                                local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                                myText:setFillColor( 1, 1, 1 )
-                                for i=1, #array do
-                                    item_mc = array[i];
-                                    item_mc.enabled = false;
-                                end
-                            end
-                        end
-                    end
-                    if ( countToWin == 5 and arrayText[i] == 1 ) then
-                        print("X:" .. i )
-                        if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] and arrayText[i+3] == arrayText[i+4] ) then
-                            if ( array[i].y == array[i+1].y and array[i+1].y == array[i+2].y and array[i+2].y == array[i+3].y and array[i+3].y == array[i+4].y ) then
-                                print("X Won")
-                                local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                                myText:setFillColor( 1, 1, 1 )
-                                for i=1, #array do
-                                    item_mc = array[i];
-                                    item_mc.enabled = false;
-                                end
-                            end
+                    if i+1 < count + 1 then -- Защита от дебила
+                        if ( arrayText[i][j] ~= arrayText[i+1][j] ) then -- Если не замечена серия, то обнуляем sum
+                            sum = 0
+                            print("obnulyaem")
                         end
                     end
                 end
             end
-            local function checkWinVertical()
-                for i=1, count^2 do
-                    if ( countToWin == 3 and arrayText[i] == 1 ) then
-                        if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] ) then
-                            print("X Won")
-                            local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
+        end
+
+        local function checkWinVertical() -- Проверяем вертикали
+            local sum = 0
+            for i = 1, count do -- Перебераем двумерный массив
+                -- print("next stolb")
+                for j = 1, count do -- Перебераем двумерный массив
+                    if ( arrayText[i][j] ~= 0 ) then -- Клетка не пуста, то
+                        sum = sum + arrayText[i][j] -- Прибовляем значение выбранной клетки к sum
+                        -- print( "sum = ", sum )
+                    else -- Если клетка пуста, обнуляем сум
+                        sum = 0
+                    end
+                    if ( math.abs(sum) == countToWin ) then -- Если модуль счётчика равен нужному количеству фигур в ряд, то это значит, что кто то выиграл
+                        if ( sum > 0 ) then -- Если sum больше чем 0 (3, 4, 5, 6), то это значит, что выиграли крестики
+                            print( "X Won" )
+                            for i = 1, count do-- Снова цикл, делающий клетки недоступными после победы
+                                for j = 1, count do
+                                    array[i][j].enabled = false;
+                                end
+                            end
+                        elseif (sum < 0 ) then -- Если sum меньше чем 0 (-3, -4, -5, -6), то это значит, что выиграли нолики
+                            print( "O Won" )
+                            for i = 1, count do -- Снова цикл, делающий клетки недоступными после победы
+                                for j = 1, count do
+                                    array[i][j].enabled = false;
+                                end
                             end
                         end
                     end
-                    if ( countToWin == 4 and arrayText[i] == 1 ) then
-                        print("X:" .. i )
-                        if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] and arrayText[i+count*2] == arrayText[i+count*3] ) then
-                            print("X Won")
-                            local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 5 and arrayText[i] == 1 ) then
-                        print("X:" .. i )
-                        if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] and arrayText[i+count*2] == arrayText[i+count*3] and arrayText[i+count*3] == arrayText[i+count*4] ) then
-                            print("X Won")
-                            local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
+                    if j+1 < count+1 then -- Защита от дебила
+                        if ( arrayText[i][j] ~= arrayText[i][j+1] ) then -- Если не замечена серия, то обнуляем sum
+                            sum = 0
                         end
                     end
                 end
             end
-            local function checkWinDiagonal()
-                for i=1, count^2 do
-                    if ( countToWin == 3 and arrayText[i] == 1 ) then
-                        if ( arrayText[i] == arrayText[i+count+1] and arrayText[i+count+1] == arrayText[i+count*2+2] ) then
-                            print("X Won")
-                            local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
+        end
+        local function checkWinDiagonal1() -- Диагональ идущая слева-направо(от верхнего левого угла до нижнего правого)
+            local sum = 0
+            for i = 1, count do
+                -- print( arrayText[i][i] )
+                if ( arrayText[i][i] ~= 0 ) then -- Клетка не пуста, начинаем
+                    sum = sum + arrayText[i][i] -- Обновляем счётчик, если есть серия
+                    print( "sum = ", sum )
+                else
+                    sum = 0
+                end
+                if ( math.abs(sum) == countToWin ) then -- Если модуль счётчика равен нужному количеству фигур в ряд, то это значит, что кто то выиграл
+                    if ( sum > 0 ) then -- Если sum больше чем 0 (3, 4, 5, 6), то это значит, что выиграли крестики
+                        print( "X Won" )
+                        for i = 1, count do-- Снова цикл, делающий клетки недоступными после победы
+                            for j = 1, count do
+                                array[i][j].enabled = false;
                             end
                         end
-                    end
-                    if ( countToWin == 4 and arrayText[i] == 1 ) then
-                        print("X:" .. i )
-                        if ( arrayText[i] == arrayText[i+count+1] and arrayText[i+count+1] == arrayText[i+count*2+2] and arrayText[i+count*2+2] == arrayText[i+count*3+3] ) then
-                            print("X Won")
-                            local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 5 and arrayText[i] == 1 ) then
-                        print("X:" .. i )
-                        if ( arrayText[i] == arrayText[i+count+1] and arrayText[i+count+1] == arrayText[i+count*2+2] and arrayText[i+count*2+2] == arrayText[i+count*3+3] and arrayText[i+count*3+3] == arrayText[i+count*4+4] ) then
-                            print("X Won")
-
-                            local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 3 and arrayText[i] == 1 ) then
-                        if ( arrayText[i] == arrayText[i+count-1] and arrayText[i+count-1] == arrayText[i+count*2-2] ) then
-                            print("X Won")
-                            local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 4 and arrayText[i] == 1 ) then
-                        print("X:" .. i )
-                        if ( arrayText[i] == arrayText[i+count-1] and arrayText[i+count-1] == arrayText[i+count*2-2] and arrayText[i+count*2-2] == arrayText[i+count*3-3] ) then
-                            print("X Won")
-                            local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 5 and arrayText[i] == 1 ) then
-                        print("X:" .. i )
-                        if ( arrayText[i] == arrayText[i+count-1] and arrayText[i+count-1] == arrayText[i+count*2-2] and arrayText[i+count*2-2] == arrayText[i+count*3-3] and arrayText[i+count*3-3] == arrayText[i+count*4-4] ) then
-                            print("X Won")
-
-                            local myText = display.newText( "X Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
+                    elseif (sum < 0 ) then -- Если sum меньше чем 0 (-3, -4, -5, -6), то это значит, что выиграли нолики
+                        print( "O Won" )
+                        for i = 1, count do -- Снова цикл, делающий клетки недоступными после победы
+                            for j = 1, count do
+                                array[i][j].enabled = false;
                             end
                         end
                     end
                 end
+                if i+1 < count + 1 then -- Защита от дебила
+                    if ( arrayText[i][i] ~= arrayText[i+1][i+1] ) then -- Если не замечена серия, то обнуляем sum
+                        sum = 0
+                    end
+                end
             end
-            checkWinDiagonal()
-            checkWinVertical()
-            checkWinHorizontal()
+        end
+        local function checkWinDiagonal2() -- Диагональ идущая справа-налево(от )
+            -- print("DIAGONALNAYA PROVERKA")
+            local sum = 0
+            for i = 1, count do
+                if ( arrayText[count+1-i][i] ~= 0 ) then -- Клетка не пуста, начинаем
+                    -- print("arrayText == ", arrayText[count+1-i][i])
+                    sum = sum + arrayText[count+1-i][i] -- Если клетка не пустая, то начинаем записывать
+                    -- print( "sum = ", sum )
+                else -- Если клетка пуста, обнуляем сум
+                    sum = 0
+                end
+                if ( math.abs(sum) == countToWin ) then -- Если модуль счётчика равен нужному количеству фигур в ряд, то это значит, что кто то выиграл
+                    if ( sum > 0 ) then -- Если sum больше чем 0 (3, 4, 5, 6), то это значит, что выиграли крестики
+                        print( "X Won" )
+                        for i = 1, count do -- Снова цикл, делающий клетки недоступными после победы
+                            for j = 1, count do
+                                array[i][j].enabled = false;
+                            end
+                        end
+                    elseif (sum < 0 ) then
+                        print( "O Won" ) -- Если sum меньше чем 0 (-3, -4, -5, -6), то это значит, что выиграли нолики
+                        for i = 1, count do -- Снова цикл, делающий клетки недоступными после победы
+                            for j = 1, count do
+                                array[i][j].enabled = false;
+                            end
+                        end
+                    end
+                end
+                if count-i ~= 0 then -- Защита от дебила
+                    if ( arrayText[count+1-i][i] ~= arrayText[count-i][i+1] ) then -- Если не замечена серия, то обнуляем sum
+                        -- print("NETU SERII")
+                        sum = 0
+                    end
+                end
+            end
+        end
+        checkWinHorizontal()
+        checkWinVertical()
+        checkWinDiagonal1()
+        checkWinDiagonal2()
     end
 
+
+
     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    local function checkWin0()
-            local function checkWinHorizontal0()
-                print( "чеквин0 :D" )
-                for i = 1, count^2 do
-                    if ( countToWin == 3 and arrayText[i] == -1 ) then
-                        print("0:" .. i )
-                        if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] ) then
-                            if ( array[i].y == array[i+1].y and array[i+1].y == array[i+2].y  ) then
-                                print("0 Won")
-                                local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                                myText:setFillColor( 1, 1, 1 )
-                            end
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 4 and arrayText[i] == -1 ) then
-                        print("0:" .. i )
-                        if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] ) then
-                            if ( array[i].y == array[i+1].y and array[i+1].y == array[i+2].y and array[i+2].y == array[i+3].y ) then
-                                print("0 Won")
-                                local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                                myText:setFillColor( 1, 1, 1 )
-                            end
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 5 and arrayText[i] == -1 ) then
-                        print("0:" .. i )
-                        if ( arrayText[i] == arrayText[i+1] and arrayText[i+1] == arrayText[i+2] and arrayText[i+2] == arrayText[i+3] and arrayText[i+3] == arrayText[i+4] ) then
-                            if ( array[i].y == array[i+1].y and array[i+1].y == array[i+2].y and array[i+2].y == array[i+3].y and array[i+3].y == array[i+4].y ) then
-                                print("0 Won")
-                                local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                                myText:setFillColor( 1, 1, 1 )
-                            end
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                end
-            end
-            local function checkWinVertical0()
-                for i=1, count^2 do
-                    if ( countToWin == 3 and arrayText[i] == -1 ) then
-                        if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] ) then
-                            print("0 Won")
-                            local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 4 and arrayText[i] == -1 ) then
-                        print("0:" .. i )
-                        if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] and arrayText[i+count*2] == arrayText[i+count*3] ) then
-                            print("0 Won")
-                            local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 5 and arrayText[i] == -1 ) then
-                        print("0:" .. i )
-                        if ( arrayText[i] == arrayText[i+count] and arrayText[i+count] == arrayText[i+count*2] and arrayText[i+count*2] == arrayText[i+count*3] and arrayText[i+count*3] == arrayText[i+count*4] ) then
-                            print("0 Won")
-                            local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                end
-            end
-            local function checkWinDiagonal0()
-                for i=1, count^2 do
-                    if ( countToWin == 3 and arrayText[i] == -1 ) then
-                        if ( arrayText[i] == arrayText[i+count+1] and arrayText[i+count+1] == arrayText[i+count*2+2] ) then
-                            print("0 Won")
-                            local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 4 and arrayText[i] == -1 ) then
-                        print("0:" .. i )
-                        if ( arrayText[i] == arrayText[i+count+1] and arrayText[i+count+1] == arrayText[i+count*2+2] and arrayText[i+count*2+2] == arrayText[i+count*3+3] ) then
-                            print("0 Won")
-                            local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 5 and arrayText[i] == -1 ) then
-                        print("0:" .. i )
-                        if ( arrayText[i] == arrayText[i+count+1] and arrayText[i+count+1] == arrayText[i+count*2+2] and arrayText[i+count*2+2] == arrayText[i+count*3+3] and arrayText[i+count*3+3] == arrayText[i+count*4+4] ) then
-                            print("0 Won")
-
-                            local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i]
-                                item_mc.enabled = false
-                            end
-                        end
-                    end
-                    if ( countToWin == 3 and arrayText[i] == -1 ) then
-                        if ( arrayText[i] == arrayText[i+count-1] and arrayText[i+count-1] == arrayText[i+count*2-2] ) then
-                            print("0 Won")
-                            local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 4 and arrayText[i] == -1 ) then
-                        print("0:" .. i )
-                        if ( arrayText[i] == arrayText[i+count-1] and arrayText[i+count-1] == arrayText[i+count*2-2] and arrayText[i+count*2-2] == arrayText[i+count*3-3] ) then
-                            print("0 Won")
-                            local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                    if ( countToWin == 5 and arrayText[i] == -1 ) then
-                        print("0:" .. i )
-                        if ( arrayText[i] == arrayText[i+count-1] and arrayText[i+count-1] == arrayText[i+count*2-2] and arrayText[i+count*2-2] == arrayText[i+count*3-3] and arrayText[i+count*3-3] == arrayText[i+count*4-4] ) then
-                            print("0 Won")
-
-                            local myText = display.newText( "0 Won" , display.contentCenterX, display.contentCenterY*1.85, "Algerian", display.contentWidth/6 ) -- Добавляем текст выигрыша. Пока он будет за место функции gotoX()
-                            myText:setFillColor( 1, 1, 1 )
-                            for i=1, #array do
-                                item_mc = array[i];
-                                item_mc.enabled = false;
-                            end
-                        end
-                    end
-                end
-            end
-
-                checkWinDiagonal0()
-                checkWinVertical0()
-                checkWinHorizontal0()
-    end
 
     -- Дохрена сложная функция :D
     local function checkButtons(event)
-        for i = 1, #array do -- пробегаемся по массиву, который мы привязали к квадратикам
-            local item_mc = array[i]; -- Обозначаем переменную item_mc
-            local _x, _y = item_mc:localToContent( 0, 0 ); -- Тут узнаём координаты центров всех квадратов
-            local dx = event.x - _x; --считаем разницу нажатия и координат квадратика от центра по x
-            local dy = event.y - _y; --считаем разницу нажатия и координат квадратика от центра по y
-            local wh  = item_mc.width; -- записываем длину квадрата в переменную
-            local ht  = item_mc.height; -- записываем ширину квадрата в переменную
+        for i = 1, count do -- Пробегаемся по массиву, который мы привязали к квадратикам
+            for j = 1, count do -- Опана, а он двумерный :D
+                local item_mc = array[i][j]; -- Обозначаем переменную item_mc
+                local _x, _y = item_mc:localToContent( 0, 0 ); -- Тут узнаём координаты центров всех квадратов
+                local dx = event.x - _x; --Считаем разницу нажатия и координат квадратика от центра по x
+                local dy = event.y - _y; --Считаем разницу нажатия и координат квадратика от центра по y
+                local wh  = item_mc.width; -- Записываем длину квадрата в переменную
+                local ht  = item_mc.height; -- Записываем ширину квадрата в переменную
 
-            if (math.abs(dx)<wh/2 and math.abs(dy)<ht/2) then --Если расстояние от центра одного квадрата меньше, чем половина его длины/ширины, то мы понимаем, что нему было произведено нажатие
-                if( item_mc.selected == false ) then -- Если по квадратику было произведено нажатие, но до этого он не был выбран - выбираем его
-                    item_mc.selected = true;
-                    print('S')
-                end
-            else
-                if ( item_mc.selected == true ) then -- если уже выбран какой то ещё объект, то делаем ему сатаус "Не выбран"
-                    item_mc.selected = false;
-                    print( 'unS' )
+                if (math.abs(dx)<wh/2 and math.abs(dy)<ht/2) then --Если расстояние от центра одного квадрата меньше, чем половина его длины/ширины, то мы понимаем, что нему было произведено нажатие
+                    if( item_mc.selected == false ) then -- Если по квадратику было произведено нажатие, но до этого он не был выбран - выбираем его
+                        item_mc.selected = true;
+                        print('S')
+                    end
+                else
+                    if ( item_mc.selected == true ) then -- Если уже выбран какой то ещё объект, то делаем ему сатаус "Не выбран"
+                        item_mc.selected = false;
+                        print( 'unS' )
 
+                    end
                 end
             end
         end
@@ -505,47 +332,50 @@ function scene:create( event )
         local phase = event.phase;
 
         if ( phase == 'began' ) then
-            print( "touchTurn" )
-            for i = 1, #array do
-                local item_mc = array[i];
-                if (item_mc.enabled == true) then
-                    checkButtons(event);
+            print( ". . .TouchTurn. . ." )
+            for i = 1, count do
+                for j = 1, count do
+                    local item_mc = array[i][j];
+                    if (item_mc.enabled == true) then
+                        checkButtons(event);
+                    end
                 end
             end
-        elseif( phase == 'moved' ) then
-            for i = 1, #array do
-                local item_mc = array[i];
-                if (item_mc.enabled == true) then
-                    checkButtons(event);
+        elseif ( phase == 'moved' ) then
+            for i = 1, count do
+                for j = 1, count do
+                    local item_mc = array[i][j];
+                    if (item_mc.enabled == true) then
+                        checkButtons(event);
+                    end
                 end
             end
-        else
+        elseif ( phase == 'ended' ) then
             if(getCountFreeRect() > 0) then
-                for i = 1, #array do
-                    local item_mc = array[i];
-                    if (item_mc.selected and item_mc.enabled) then -- Если квадратик выбран и доступен, ставим там крестик
-                      local _x, _y = item_mc:localToContent( 0, 0 ); -- Тут узнаём координаты центров всех квадратов
-                      if WhoNow > 2 then
-                        WhoNow = 1
-                      end
-                      Kartina = display.newImageRect(emblems[WhoNow], size/1.5, size/1.5)
-                      Kartina.x = _x
-                      Kartina.y = _y
-                      item_mc.enabled = false;
-                      WhoNow = WhoNow + 1
-
-                      if ( WhoNow % 2 == 0 ) then
-                          arrayText[i] = 1
-                          print( arrayText[i] )
-                      else
-                          arrayText[i] = -1
-                          print( arrayText[i] )
-                      end
-                      checkWinX();
-                      checkWin0();
-                      --turnAI();
-
-
+                for i= 1, count do
+                    for j = 1, count do
+                        local item_mc = array[i][j];
+                        if (item_mc.selected and item_mc.enabled) then -- Если квадратик выбран и доступен, ставим там крестик
+                              local _x, _y = item_mc:localToContent( 0, 0 ); -- Тут узнаём координаты центров всех квадратов
+                              if WhoNow > 2 then
+                                WhoNow = 1
+                              end
+                              Kartina = display.newImageRect(emblems[WhoNow], size/1.5, size/1.5)
+                              Kartina.x = _x
+                              Kartina.y = _y
+                              item_mc.enabled = false;
+                              WhoNow = WhoNow + 1
+                              if ( WhoNow % 2 == 0 ) then
+                                  arrayText[i][j] = 1
+                                  print( "X has been printed in [" .. i .. "][" .. j .. "]" )
+                              else
+                                  arrayText[i][j] = -1
+                                  print( "O has been printed in [" .. i .. "][" .. j .. "]" )
+                              end
+                              -- checkWinDebug();
+                              CheckWin();
+                              -- turnAI();
+                        end
                     end
                 end
             end
@@ -553,7 +383,7 @@ function scene:create( event )
     end
 
     -- Тута у нас функция рисующая прямоугольники
-    local function createRect(_id, _x, _y)
+    local function createRect(_id, _x, _y, arrayX, arrayY)
         rnd1 = math.random(0.0, 1.0) --R
         rnd2 = math.random(0.0, 1.0) --G
         rnd3 = math.random(0.0, 1.0) --B
@@ -570,28 +400,28 @@ function scene:create( event )
         rectangle.selected = false;
         rectangle.enabled = true;
         mainGroup.parent:insert(rectangle)-- Добавляем наш прямоугольник на сцену
-        table.insert( array, rectangle ) -- привязываем массив к нашему квадратику
-        local myText = display.newText( "" , _x, _y, native.systemFont, size/1.5 ) -- Добавляем текст. Да это хреново, но пока он будет за место эконки
-        myText:setFillColor( 1, 1, 1 )
-        mainGroup.parent:insert(myText)
-        table.insert( arrayText, myText )
+        array[arrayX][arrayY] = rectangle -- привязываем массив к нашему квадратику
         rectangle:addEventListener( "touch", touchTurn )
     end
 
     ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     -- Делаем циклы, необходимые для прорисовки поля и обозначния клеток в массиве
     ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    local function drawField()
+        for i = 1, count do
+            for j = 1, count do
+                createRect( i,  startX + (i-1)*size, startY + (j-1)*size, i, j ); -- тут чистая математика, просто надо разобраться и всё
+            end
+        end
 
-    for i = 1, count^2 do
-        createRect( i,  startX + posX*size, startY + posY*size ); -- тут чистая математика, просто надо разобраться и всё
-        arrayText[i] = 0
-        posX = posX + 1 -- прибавляем к иксу + 1, после рисовки каждого квадрата
-        if ( posX % count == 0 ) then -- Пишем условный оператор, который делает из строчки квадратов поле для игры
-              posX = 0;
-              posY = posY + 1
+        for i = 1, count do
+            arrayText[i] = {};
+            for j = 1, count do
+                arrayText[i][j] = 0;
+            end
         end
     end
-
+    drawField()
     -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -649,3 +479,18 @@ scene:addEventListener( "destroy", scene )
 -- -----------------------------------------------------------------------------------
 
 return scene
+
+
+
+-- Функция TouchTurn работает мягко говоря хуёво и это исправляется двумя способами:
+-- 1. Внимание Костыль!!! Можно скопировать if из первой части функции во вторую, это будет полегче, но это костыль.
+-- 2. Надо переписать array под двумерный массив и убрать несколько циклов. Мало того, что это будет более оптимизировано так ещё и без костылей(но над этим париться надо)
+-- Далее надо сохранить функцию CheckWin, которая есть сейчас, ато слишком много ошибок это хреново, она послужит нам дебаггером.
+-- После переписать прошлый CheckWin, если будут ошибки, наш дебаггер поможет их найти, если не будет, то это успех!
+-- Далее надо написать ИИ, работающий по алгоритму "Подсчёта пустой клетки"(Ахуенное название правда?).
+-- Этот алгоритм в отличие от CheckWin будет брать в расчёт только пустые клетки и считать их эффективность, таким образом мы сможем сделать ИИ сложного и среднего уровней.
+-- После надо подумать над созданием ИИ лёгкого и невозможного уровней, ибо это сложно. Тут возможно(а может и нет), пригодятся тестировщики, благо они есть.
+-- Когда мы сделаем всё вышеперечисленное, работа над ИИ скорее всего подойдёт к концу.
+-- После - Игра 1х1(с другом), Меню, Профиль, Настройки, Дизайн, Больше дизайна, ЕЩЁ БОЛЬШЕ ДИЗАЙНА!!!
+--
+-- Это краткий план того, что нам ещё надо сделать до первой АДЕКВАТНОЙ версии Tic-tac-toe.

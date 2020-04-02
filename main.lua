@@ -2,16 +2,15 @@ local composer = require( "composer" )
 
 -- Hide status bar
 display.setStatusBar( display.HiddenStatusBar )
-W = display.contentWidth
-H = display.contentHeight
+
 -- Seed the random number generator
 math.randomseed( os.time() )
 
--- Get back
-function gotoBack()
-    composer.getSceneName( composer.getSceneName( "previous" ) )
-end
-
+-- Нужные переменные
+W = display.contentWidth
+H = display.contentHeight
+WCenter = display.contentCenterX
+HCenter = display.contentCenterY
 
 -- Go to the menu screen
 composer.gotoScene( "menu" )

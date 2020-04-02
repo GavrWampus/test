@@ -13,6 +13,12 @@ local textGroup = display.newGroup() -- Суда текст
 local backGroup = display.newGroup() -- А тут будут элементы бекграунда
 
 
+-- local function gotoPlay()
+-- 	composer.removeScene( "play" )
+-- 	composer.gotoScene( "play", { time=800, effect="crossFade" } )
+-- end
+
+
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -29,9 +35,11 @@ function scene:create( event )
 
     local function buttonPlayEvent( event ) -- Эта функция работает при нажатии на buttonPlay
 
+
         if ( "ended" == event.phase ) then
+            composer.removeScene( "solo" )
+            composer.gotoScene( "solo", { time=800, effect="crossFade" } )
             print( "buttonPlay was pressed and released" )
-            composer.gotoScene( "solo" )
         end
     end
 
@@ -54,10 +62,11 @@ function scene:create( event )
             strokeWidth = 4
         }
     )
-    buttonsGroup:insert(buttonPlay)
+
     -- Center the button
     buttonPlay.x = W/2
-    buttonPlay.y = H/2+H*0.34
+    buttonPlay.y = H/2+W*0.5
+    buttonsGroup:insert(buttonPlay)
 
 
     local function buttonNickEvent( event ) -- Эта функция работает при нажатии на buttonPlay
@@ -87,12 +96,13 @@ function scene:create( event )
             strokeWidth = 4
         }
     )
-    buttonsGroup:insert(buttonNick)
+
     -- Center the button
     buttonNick.x = 49
     buttonNick.y = 15
+    sceneGroup:insert(buttonNick)
 
-    local rankCircle = display.newCircle(buttonsGroup, 15, 15, 7)
+    local rankCircle = display.newCircle(textGroup, 15, 15, 7)
     rankCircle:setFillColor(1,1,0,1)
 
 end
@@ -136,7 +146,6 @@ function scene:destroy( event )
     local sceneGroup = self.view
     -- Code here runs prior to the removal of scene's view
 
-    composer.removeScene( "menu" )
 end
 
 
