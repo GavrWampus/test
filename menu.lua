@@ -37,8 +37,8 @@ function scene:create( event )
 
 
         if ( "ended" == event.phase ) then
-            composer.removeScene( "solo" )
-            composer.gotoScene( "solo", { time=800, effect="crossFade" } )
+            composer.removeScene( "soloImpossible" )
+            composer.gotoScene( "soloImpossible", { time=800, effect="crossFade" } )
             print( "buttonPlay was pressed and released" )
         end
     end

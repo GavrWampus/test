@@ -78,16 +78,15 @@ function scene:create( event )
     ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     local WhoNow = 1 -- Используется для емблем
-    local count = 10; -- Размер поля
-    local countToWin = 5; -- Сколько нужно поставить в ряд для победы
+    local count = 5; -- Размер поля
+    local countToWin = 4; -- Сколько нужно поставить в ряд для победы
     local W = display.contentWidth; -- Создаём переменную W что бы не писать каждый раз Width
     local H = display.contentHeight; -- Создаём переменную H что бы не писать каждый раз Height
     local size = display.contentWidth/count; -- Размер клетки
     local startX = W/2 + size/2 - size*count/2; -- Начало отчета для клетки
     local startY = H/2 + size/2 - size*count/2; -- Начало отсчета для клетки
-    local emblems = {"redKrestikButton.png", "greenNolikButton.png"} -- Массив с эмблемами "krestMenu.png", "nolMenu.png", 
+    local emblems = {"redKrestikButton.png", "greenNolikButton.png"} -- Массив с эмблемами "krestMenu.png", "nolMenu.png",
     local arrayText = {} -- Значения клеток хранятся тут
-
     local array = {} -- Сами клетки хранятся тут
     for i= 1, count do -- Создаем двумерный массив
         array[i] = {}
@@ -102,8 +101,8 @@ function scene:create( event )
     --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     -- Functions
     --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    --Функция, которая считает свободные квадратики
-    function getCountFreeRect()
+
+    function getCountFreeRect() --Функция, которая считает свободные квадратики
         local countFree = count^2;
         for i = 1, count do
             for j = 1, count do
@@ -116,188 +115,197 @@ function scene:create( event )
         return countFree;
     end
 
-    function turnAI() -- Тут у нас ИИ ставит нолики(Пункция хрень, патамушта он ставит их рандомно, а нам надо, что бы он играл осознанно(Идея в процессе разработки))
-
-    end
-
     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-    local function checkWinDebug() -- Пусть будет
-        print [=[
-        .
-        .
-        .
-        .
-        .]=]
-        -- Проверка столбцов
-        for i = 1, count do -- Пробегаемся по строкам
-            local sum = 0; -- Переменная будет считать, сумму столбца
-            for j = 1, count do -- Пробегаемся по столбцам
-                print( "iteration: " .. i .. ";" .. j )
-                local sum = sum + arrayText[i][j]
-                print(sum)
-            end
-        end
-    end
-
 
 
 
 
     local function CheckWin() -- ооооо, тут все и начинается
-        local function checkWinHorizontal() -- Проверяем горизонтали
-            local sum = 0
-            for j = 1, count do -- Перебераем двумерный массив
-                print("stroka", j)
-                for i = 1, count do -- Перебераем двумерный массив
-                    if ( arrayText[i][j] ~= 0 ) then -- Клетка не пуста, начинаем
-                        sum = sum + arrayText[i][j] -- Sum - счётчик серии, если есть серия, то к нему прибавляется значение клетки массива
-                        print( "sum = ", sum )
-                    else -- Если клетка пуста, обнуляем сум
-                        sum = 0
+        local function Victory(sum)
+            -- print("---Victory---")
+            -- print( "sum =" .. sum )
+            if ( math.abs(sum) == countToWin ) then -- Если модуль счётчика равен нужному количеству фигур в ряд, то это значит, что кто то выиграл
+                if ( sum > 0 ) then -- Если sum больше чем 0 (3, 4, 5, 6), то это значит, что выиграли крестики
+                    print( "X Won" )
+                    for i = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
+                        for j = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
+                            array[i][j].enabled = false; -- Выключаем все клетки
+                        end -- Этот цикл нужен нам, что бы после победы нельзя было ставить крестики и нолики
                     end
-                    if ( math.abs(sum) == countToWin ) then -- Если модуль счётчика равен нужному количеству фигур в ряд, то это значит, что кто то выиграл
-                        if ( sum > 0 ) then -- Если sum больше чем 0 (3, 4, 5, 6), то это значит, что выиграли крестики
-                            print( "X Won" )
-                            for i = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
-                                for j = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
-                                    array[i][j].enabled = false; -- Выключаем все клетки
-                                end -- Этот цикл нужен нам, что бы после победы нельзя было ставить крестики и нолики
-                            end
-                        elseif (sum < 0 ) then -- Если sum меньше чем 0 (-3, -4, -5, -6), то это значит, что выиграли нолики
-                            print( "O Won" )
-                            for i = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
-                                for j = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
-                                    array[i][j].enabled = false; -- Выключаем все клетки
-                                end -- Снова цикл, делающий клетки недоступными после победы
-                            end
-                        end
-                    end
-                    if i+1 < count + 1 then -- Защита от дебила
-                        if ( arrayText[i][j] ~= arrayText[i+1][j] ) then -- Если не замечена серия, то обнуляем sum
-                            sum = 0
-                            print("obnulyaem")
-                        end
+                elseif (sum < 0 ) then -- Если sum меньше чем 0 (-3, -4, -5, -6), то это значит, что выиграли нолики
+                    print( "O Won" )
+                    for i = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
+                        for j = 1, count do -- Перебераем двумерный массив, чтоб выключить поле
+                            array[i][j].enabled = false; -- Выключаем все клетки
+                        end -- Снова цикл, делающий клетки недоступными после победы
                     end
                 end
             end
         end
+        local sumHorizontal = 0;
+        local sumVertical = 0;
+        local sumDiagonal1 = 0;
+        local sumDiagonal2 = 0;
+        for i= 1, count do
+            sumHorizontal = 0;
+            sumVertical = 0;
+            for j= 1, count do
+                if ( arrayText[j][i] ~= 0 ) then
+                    ---------------------------------------------------------------------------------------------------
+                    local function checkWinHorizontal() -- Проверяем горизонтали
+                        sumHorizontal = sumHorizontal + arrayText[j][i];
+                        ---------
+                        Victory(sumHorizontal)
+                        ---------
+                        if ( j+1 <= count and arrayText[j][i] ~= arrayText[j+1][i] ) then
+                            sumHorizontal = 0;
+                        end
+                    end
+                    checkWinHorizontal()
+                end
+                if ( arrayText[i][j] ~= 0 ) then
+                    -----------------------------------------------------------------------------------------------
+                    local function checkWinVertical() -- Проверяем вертикали
+                        sumVertical = sumVertical + arrayText[i][j]
+                        ---------
+                        Victory(sumVertical)
+                        ---------
+                        if ( j+1 <= count and arrayText[i][j] ~= arrayText[i][j+1] ) then -- Клетка нет серии
+                            sumVertical = 0;
+                        end
+                    end
+                    checkWinVertical()
+                    -------------------------------------------------------------------------------------------------
+                    for c = 0, countToWin-1 do
 
-        local function checkWinVertical() -- Проверяем вертикали
-            local sum = 0
-            for i = 1, count do -- Перебераем двумерный массив
-                -- print("next stolb")
-                for j = 1, count do -- Перебераем двумерный массив
-                    if ( arrayText[i][j] ~= 0 ) then -- Клетка не пуста, то
-                        sum = sum + arrayText[i][j] -- Прибовляем значение выбранной клетки к sum
-                        -- print( "sum = ", sum )
-                    else -- Если клетка пуста, обнуляем сум
-                        sum = 0
-                    end
-                    if ( math.abs(sum) == countToWin ) then -- Если модуль счётчика равен нужному количеству фигур в ряд, то это значит, что кто то выиграл
-                        if ( sum > 0 ) then -- Если sum больше чем 0 (3, 4, 5, 6), то это значит, что выиграли крестики
-                            print( "X Won" )
-                            for i = 1, count do-- Снова цикл, делающий клетки недоступными после победы
-                                for j = 1, count do
-                                    array[i][j].enabled = false;
-                                end
+                        local function checkWinDiagonal1() -- Диагональ идущая слева-направо(от верхнего левого угла до нижнего правого)
+                            if ( i+c <= count and j+c <= count and arrayText[i][j] == arrayText[i+c][j+c] ) then
+                                sumDiagonal1 = sumDiagonal1 + arrayText[i+c][j+c];
+                            else
+                                sumDiagonal1 = 0;
                             end
-                        elseif (sum < 0 ) then -- Если sum меньше чем 0 (-3, -4, -5, -6), то это значит, что выиграли нолики
-                            print( "O Won" )
-                            for i = 1, count do -- Снова цикл, делающий клетки недоступными после победы
-                                for j = 1, count do
-                                    array[i][j].enabled = false;
-                                end
+                            ---------
+                            Victory(sumDiagonal1)
+                            ---------
+                        end
+                        checkWinDiagonal1()
+                        ---------------------------------------------------------------------------------------------------
+                        local function checkWinDiagonal2() -- Диагональ идущая справа-налево(от )
+                            if ( i+c <= count and j-c <= count and arrayText[i][j] == arrayText[i+c][j-c] ) then
+                                sumDiagonal2 = sumDiagonal2 + arrayText[i+c][j-c];
+                            else
+                                sumDiagonal2 = 0;
                             end
+                            --------
+                            Victory(sumDiagonal2)
+                            --------
                         end
-                    end
-                    if j+1 < count+1 then -- Защита от дебила
-                        if ( arrayText[i][j] ~= arrayText[i][j+1] ) then -- Если не замечена серия, то обнуляем sum
-                            sum = 0
-                        end
+                        checkWinDiagonal2()
                     end
                 end
             end
         end
-        local function checkWinDiagonal1() -- Диагональ идущая слева-направо(от верхнего левого угла до нижнего правого)
-            local sum = 0
-            for i = 1, count do
-                -- print( arrayText[i][i] )
-                if ( arrayText[i][i] ~= 0 ) then -- Клетка не пуста, начинаем
-                    sum = sum + arrayText[i][i] -- Обновляем счётчик, если есть серия
-                    print( "sum = ", sum )
-                else
-                    sum = 0
-                end
-                if ( math.abs(sum) == countToWin ) then -- Если модуль счётчика равен нужному количеству фигур в ряд, то это значит, что кто то выиграл
-                    if ( sum > 0 ) then -- Если sum больше чем 0 (3, 4, 5, 6), то это значит, что выиграли крестики
-                        print( "X Won" )
-                        for i = 1, count do-- Снова цикл, делающий клетки недоступными после победы
-                            for j = 1, count do
-                                array[i][j].enabled = false;
-                            end
-                        end
-                    elseif (sum < 0 ) then -- Если sum меньше чем 0 (-3, -4, -5, -6), то это значит, что выиграли нолики
-                        print( "O Won" )
-                        for i = 1, count do -- Снова цикл, делающий клетки недоступными после победы
-                            for j = 1, count do
-                                array[i][j].enabled = false;
-                            end
-                        end
-                    end
-                end
-                if i+1 < count + 1 then -- Защита от дебила
-                    if ( arrayText[i][i] ~= arrayText[i+1][i+1] ) then -- Если не замечена серия, то обнуляем sum
-                        sum = 0
-                    end
-                end
-            end
-        end
-        local function checkWinDiagonal2() -- Диагональ идущая справа-налево(от )
-            -- print("DIAGONALNAYA PROVERKA")
-            local sum = 0
-            for i = 1, count do
-                if ( arrayText[count+1-i][i] ~= 0 ) then -- Клетка не пуста, начинаем
-                    -- print("arrayText == ", arrayText[count+1-i][i])
-                    sum = sum + arrayText[count+1-i][i] -- Если клетка не пустая, то начинаем записывать
-                    -- print( "sum = ", sum )
-                else -- Если клетка пуста, обнуляем сум
-                    sum = 0
-                end
-                if ( math.abs(sum) == countToWin ) then -- Если модуль счётчика равен нужному количеству фигур в ряд, то это значит, что кто то выиграл
-                    if ( sum > 0 ) then -- Если sum больше чем 0 (3, 4, 5, 6), то это значит, что выиграли крестики
-                        print( "X Won" )
-                        for i = 1, count do -- Снова цикл, делающий клетки недоступными после победы
-                            for j = 1, count do
-                                array[i][j].enabled = false;
-                            end
-                        end
-                    elseif (sum < 0 ) then
-                        print( "O Won" ) -- Если sum меньше чем 0 (-3, -4, -5, -6), то это значит, что выиграли нолики
-                        for i = 1, count do -- Снова цикл, делающий клетки недоступными после победы
-                            for j = 1, count do
-                                array[i][j].enabled = false;
-                            end
-                        end
-                    end
-                end
-                if count-i ~= 0 then -- Защита от дебила
-                    if ( arrayText[count+1-i][i] ~= arrayText[count-i][i+1] ) then -- Если не замечена серия, то обнуляем sum
-                        -- print("NETU SERII")
-                        sum = 0
-                    end
-                end
-            end
-        end
-        checkWinHorizontal()
-        checkWinVertical()
-        checkWinDiagonal1()
-        checkWinDiagonal2()
     end
 
 
+    ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+    local function turnAI() -- Тут у наc функкция отвечающая за ИИ
+        local function turnAIEasy()
+            local countAI = 0; -- Эффективность клетки
+            local posI = i;
+            local posJ = j;
+            local cndStar = false;
+            cndStarToWin = true;
+            local arrayStar = {};
+            for i = 1, count do
+                for j = 1, count do -- выбор клетки
+                    if ( arrayText[i][j] == 0 ) then
+                        for starNumber = 1, 8 do
+                            arrayStar[starNumber] = 0;
+                        end
+                        for c = 1, countToWin do
+                            ------------------------------------------
+                            -------------Horizontal_Right-------------
+                            if ( i+c <= count ) then
+                                arrayStar[1] = arrayStar[1] + math.abs(arrayText[i+c][j]);
+                            end
+                            ------------------------------------------
+                            -------------Horizontal_Left--------------
+                            if ( i-c > 0 ) then
+                                arrayStar[2] = arrayStar[2] + math.abs(arrayText[i-c][j]);
+                            end
+                            ------------------------------------------
+                            -------------Vertical_Down----------------
+                            if ( j+c <= count ) then
+                                arrayStar[3] = arrayStar[3] + math.abs(arrayText[i][j+c]);
+                            end
+                            ------------------------------------------
+                            -------------Vertical_Up------------------
+                            if ( j-c > 0 ) then
+                                arrayStar[4] = arrayStar[4] + math.abs(arrayText[i][j-c]);
+                            end
+                            ------------------------------------------
+                            -------------Diagonal_1_Down--------------
+                            if ( j+c <= count and i+c <= count ) then
+                                arrayStar[5] = arrayStar[5] + math.abs(arrayText[i+c][j+c]);
+                            end
+                            ------------------------------------------
+                            -------------Diagonal_1_Up----------------
+                            if ( j-c > 0 and i-c > 0 ) then
+                                arrayStar[6] = arrayStar[6] + math.abs(arrayText[i-c][j-c]);
+                            end
+                            ------------------------------------------
+                            -------------Diagonal_2_Down--------------
+                            if ( i-c > 0 and j+c <= count ) then
+                                arrayStar[7] = arrayStar[7] + math.abs(arrayText[i-c][j+c]);
+                            end
+                            ------------------------------------------
+                            -------------Diagonal_2_Up----------------
+                            if ( i+c <= count and j-c > 0 ) then
+                                arrayStar[8] = arrayStar[8] + math.abs(arrayText[i+c][j-c]);
+                            end
+                        end
+                        local countAINew = 0;
+                        for starNum = 1, #arrayStar do
+                            countAINew = countAINew + arrayStar[starNum];
+                            if (arrayStar[starNum] >= countToWin - 1 and cndStarToWin == true) then
+                                cndStarToWin = false;
+                                cndStar = true;
+                                posI = i;
+                                posJ = j;
+                            end
+                        end
+                        if ( countAI < countAINew and cndStar == false ) then
+                            countAI = countAINew;
+                            posI = i;
+                            posJ = j;
+                            -- print( "countAI for [" .. i .. "][" .. j .. "] == " .. countAI )
+                        end
+                    end
+                end
+            end
+            -- print( "The highest countAI == " .. countAI )
+            if ( array[posI][posJ].enabled ) then -- Если квадратик доступен то...
+                local _x, _y = array[posI][posJ]:localToContent( 0, 0 ); -- Тут узнаём координаты центров всех квадратов
+                local Kartina = display.newImageRect(emblems[WhoNow], size/1.5, size/1.5)
+                Kartina.x = _x
+                Kartina.y = _y
+                array[posI][posJ].enabled = false;
+                WhoNow = WhoNow + 1
+                if ( WhoNow % 2 == 0 ) then
+                    arrayText[posI][posJ] = 1
+                    -- print( "X has been printed in [" .. posI .. "][" .. posJ .. "]" )
+                else
+                    arrayText[posI][posJ] = -1
+                    -- print( "O has been printed in [" .. posI .. "][" .. posJ .. "]" )
+                end
+                CheckWin()
+                WhoNow = WhoNow + 1
+            end
+        end
+        turnAIEasy()
+    end
     ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     -- Дохрена сложная функция :D
@@ -314,12 +322,12 @@ function scene:create( event )
                 if (math.abs(dx)<wh/2 and math.abs(dy)<ht/2) then --Если расстояние от центра одного квадрата меньше, чем половина его длины/ширины, то мы понимаем, что нему было произведено нажатие
                     if( item_mc.selected == false ) then -- Если по квадратику было произведено нажатие, но до этого он не был выбран - выбираем его
                         item_mc.selected = true;
-                        print('S')
+                        -- print('S')
                     end
                 else
                     if ( item_mc.selected == true ) then -- Если уже выбран какой то ещё объект, то делаем ему сатаус "Не выбран"
                         item_mc.selected = false;
-                        print( 'unS' )
+                        -- print( 'unS' )
 
                     end
                 end
@@ -351,7 +359,7 @@ function scene:create( event )
                 end
             end
         elseif ( phase == 'ended' ) then
-            if(getCountFreeRect() > 0) then
+            if( getCountFreeRect() > 0 ) then
                 for i= 1, count do
                     for j = 1, count do
                         local item_mc = array[i][j];
@@ -360,7 +368,7 @@ function scene:create( event )
                               if WhoNow > 2 then
                                 WhoNow = 1
                               end
-                              Kartina = display.newImageRect(emblems[WhoNow], size/1.5, size/1.5)
+                              local Kartina = display.newImageRect(emblems[WhoNow], size/1.5, size/1.5)
                               Kartina.x = _x
                               Kartina.y = _y
                               item_mc.enabled = false;
@@ -372,9 +380,8 @@ function scene:create( event )
                                   arrayText[i][j] = -1
                                   print( "O has been printed in [" .. i .. "][" .. j .. "]" )
                               end
-                              -- checkWinDebug();
                               CheckWin();
-                              -- turnAI();
+                              turnAI();
                         end
                     end
                 end
